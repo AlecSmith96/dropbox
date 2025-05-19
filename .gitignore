@@ -23,3 +23,9 @@ go.work.sum
 
 # env file
 .env
+
+.idea/
+dropbox.iml
+
+/tmp/src/*
+/tmp/dest/*

@@ -1,0 +1,2 @@
+source-directory: ./tmp/different/src
+destination-directory: ./tmp/dest
