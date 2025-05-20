@@ -18,6 +18,17 @@ go run ./cmd/server/main.go
 ```
 This is to ensure that the config file can be found by the config adapter.
 
+### Config
+The valid config values for this application are:
+
+| Name                    | Example Values                              | Description                                                                           |
+|-------------------------|---------------------------------------------|---------------------------------------------------------------------------------------|
+| `source-directory`      | ./some/relative/path OR /some/absolute/path | The location of the source directory to monitor.                                      |
+| `destination-directory` | ./some/relative/path OR /some/absolute/path | The location of the destination directory to synchronise with the source directory.   |
+| `base-url`              | http://localhost:8080                       | The base URL the server is running on.                                                |
+| `use-absolute-paths`    | true OR false                               | Whether to use relative or absolute paths for the source and destination directories. |
+NOTE: When using absolute paths, `~` is not expanded by Go, so if you want to use a path like `~/some/absolute/path`, then the application will need to be passed `/some/absolute/path` with the config value `use-absolute-paths` set to `true`.
+
 For the purpose of this exercise, a `dev-config.yaml` file has been committed in the repository with the config variables
 already added to allow for quick setup. The source and destination directories must exist for the application to start, if not you will get
 an error similar to:

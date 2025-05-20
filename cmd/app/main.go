@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -17,7 +18,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err = os.Stat(conf.SourceDirectory)
+	sourceDirectory := conf.SourceDirectory
+	if conf.UseAbsolutePaths {
+		home, _ := os.UserHomeDir()
+		sourceDirectory = filepath.Join(home, conf.SourceDirectory[1:])
+	}
+
+	_, err = os.Stat(sourceDirectory)
 	if err != nil {
 		if os.IsNotExist(err) {
 			slog.Error("source directory does not exist", "err", err)
@@ -35,13 +42,13 @@ func main() {
 	}
 	slog.Info("server live!")
 
-	directoryMonitor, err := adapters.NewDirectoryMonitor(conf.SourceDirectory)
+	directoryMonitor, err := adapters.NewDirectoryMonitor(sourceDirectory)
 	if err != nil {
 		slog.Error("creating directory monitor", "err", err)
 		os.Exit(1)
 	}
 
-	eventProcessor := adapters.NewEventProcessor(httpClient, conf.SourceDirectory)
+	eventProcessor := adapters.NewEventProcessor(httpClient, sourceDirectory)
 
 	// make sure all files in source directory on startup get created in destination
 	syncEvents := directoryMonitor.SyncDestinationWithSource()
