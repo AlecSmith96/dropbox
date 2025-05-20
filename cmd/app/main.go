@@ -94,7 +94,7 @@ func main() {
 				continue
 			}
 
-			slog.Info("processed event", "event", event)
+			slog.Info("processed filesystem event", "operation", event.Operation, "filePath", event.Name)
 		case <-ctx.Done():
 			slog.Debug("shutting down listener")
 			return

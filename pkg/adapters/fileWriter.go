@@ -49,10 +49,33 @@ func (writer *FileWriter) CreateFile(path string, data []byte, isDirectory bool)
 }
 
 func (writer *FileWriter) DeleteFile(path string) error {
+	// RemoveAll also handles any sub content, so if the file is a directory with files within it, all files within it
+	// are removed as well
 	err := os.RemoveAll(path)
 	if err != nil {
 		slog.Debug("failed to delete file", "err", err)
 		return err
 	}
+	return nil
+}
+
+func (writer *FileWriter) RenameFile(oldPath, newPath string) error {
+	err := os.Rename(oldPath, newPath)
+	if err != nil {
+		slog.Debug("unable to rename file", "err", err)
+		return err
+	}
+
+	return nil
+}
+
+func (writer *FileWriter) UpdateFile(path string, data []byte) error {
+	// WriteFile will remove all content in the file, then replace it with the new content
+	err := os.WriteFile(path, data, 0o644)
+	if err != nil {
+		slog.Debug("failed to update files contents", "err", err)
+		return err
+	}
+
 	return nil
 }

@@ -31,5 +31,5 @@ As the`app` synchronises initial source state on startup, the `server` needs to 
 
 During the development of the application I have made a few assumptions, these are:
 
-- On startup, the destination directory will always be empty, and not require synchronising the directories 
-bi-directionally. The `app` will synchronise any existing files in the source directory on startup.
+- On startup, the destination directory will always be empty or reflect the source directory exactly, and not require synchronising the directories 
+bi-directionally. Any differences in the destination directory will not be updated. The `app` will synchronise any existing files in the source directory on startup.

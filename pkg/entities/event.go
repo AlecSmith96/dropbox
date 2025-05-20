@@ -16,6 +16,8 @@ type FilesystemEvent struct {
 	FileContents FileContents
 }
 
+// FileContents is a struct that represents a file's metadata. It does whether it is a directory, its inode and the
+// contents of the file.
 type FileContents struct {
 	IsDirectory bool
 	Inode       uint64

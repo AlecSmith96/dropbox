@@ -44,16 +44,34 @@ func (processor *EventProcessor) ProcessEvent(event entities.FilesystemEvent) er
 		err := processor.httpClient.SendCreateRequest(filePathWithoutSource, event.FileContents.Data, event.FileContents.IsDirectory)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
+			return err
 		}
+
 	case entities.OperationRenamed:
-		// UPDATE request
+		trimmedPath = strings.Split(event.PreviousPath, processor.sourcePath)
+		if len(trimmedPath) != 2 {
+			return errors.New("invalid trimmed path produced")
+		}
+		previousFilePathWithoutSource := trimmedPath[1]
+		err := processor.httpClient.SendRenameRequest(previousFilePathWithoutSource, filePathWithoutSource)
+		if err != nil {
+			slog.Error("processing create request", "err", err)
+			return err
+		}
+
 	case entities.OperationDeleted:
 		err := processor.httpClient.SendDeleteRequest(filePathWithoutSource)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
+			return err
 		}
+
 	case entities.OperationModified:
-		// UPDATE request
+		err := processor.httpClient.SendUpdateRequest(filePathWithoutSource, event.FileContents.Data)
+		if err != nil {
+			slog.Error("processing create request", "err", err)
+			return err
+		}
 
 	default:
 		slog.Error("unknown event operation", "operation", event.Operation)
