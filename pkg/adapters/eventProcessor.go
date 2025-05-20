@@ -41,7 +41,7 @@ func (processor *EventProcessor) ProcessEvent(event entities.FilesystemEvent) er
 
 	switch event.Operation {
 	case entities.OperationCreated:
-		err := processor.httpClient.SendCreateRequest(filePathWithoutSource, event.FileContents.Data)
+		err := processor.httpClient.SendCreateRequest(filePathWithoutSource, event.FileContents.Data, event.FileContents.IsDirectory)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
 		}

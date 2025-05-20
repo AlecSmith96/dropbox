@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -18,7 +19,14 @@ func NewFileWriter(destinationPath string) *FileWriter {
 
 // CreateFile is a function for creating a file at the given path, with the contents if provided. For any files that exist in sub directories it will
 // recursively create each sub directory before creating the file.
-func (writer *FileWriter) CreateFile(path string, data []byte) error {
+func (writer *FileWriter) CreateFile(path string, data []byte, isDirectory bool) error {
+	if isDirectory {
+		if err := os.MkdirAll(path, 0755); err != nil {
+			return fmt.Errorf("mkdir %q: %w", path, err)
+		}
+		return nil
+	}
+
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err

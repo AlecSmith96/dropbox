@@ -35,6 +35,10 @@ func NewDirectoryMonitor(root string) (*DirectoryMonitor, error) {
 func (monitor *DirectoryMonitor) SyncDestinationWithSource() []entities.FilesystemEvent {
 	syncEvents := make([]entities.FilesystemEvent, 0)
 	for path, metadata := range monitor.previousSnapshot {
+		if path == monitor.rootPath {
+			continue
+		}
+
 		syncEvents = append(syncEvents, entities.FilesystemEvent{
 			Name:         path,
 			Operation:    entities.OperationCreated,
@@ -118,8 +122,8 @@ func (monitor *DirectoryMonitor) BuildSnapshot(root string) (map[string]entities
 			return nil
 		}
 
-		// WalkDir handles subdirectories for us, so we can skip them here
-		if d.IsDir() {
+		// exclude source directory entry
+		if d.Name() == path {
 			return nil
 		}
 
@@ -130,21 +134,32 @@ func (monitor *DirectoryMonitor) BuildSnapshot(root string) (map[string]entities
 			return err
 		}
 
-		data, err := os.ReadFile(path)
-		if err != nil {
-			slog.Error("read file", "path", path, "err", err)
-			return err
-		}
-
+		// get the iNode of the file to track name changes later on
 		st, ok := info.Sys().(*syscall.Stat_t)
 		if !ok {
 			slog.Error("unexpected Sys() type", "path", path)
 			return err
 		}
 
+		// dont try to get content if file is a directory
+		if d.IsDir() {
+			directoryMap[path] = entities.FileContents{
+				Inode:       st.Ino,
+				IsDirectory: true,
+			}
+			return nil
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			slog.Error("read file", "path", path, "err", err)
+			return err
+		}
+
 		directoryMap[path] = entities.FileContents{
-			Inode: st.Ino,
-			Data:  data,
+			Inode:       st.Ino,
+			Data:        data,
+			IsDirectory: false,
 		}
 		return nil
 	})

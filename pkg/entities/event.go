@@ -17,6 +17,7 @@ type FilesystemEvent struct {
 }
 
 type FileContents struct {
-	Inode uint64
-	Data  []byte
+	IsDirectory bool
+	Inode       uint64
+	Data        []byte
 }
