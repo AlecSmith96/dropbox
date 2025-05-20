@@ -38,6 +38,19 @@ an error similar to:
 
 As the`app` synchronises initial source state on startup, the `server` needs to be ready when it starts up. However, when the app starts up it will poll a liveness endpoint on the server until it is ready to serve traffic before beginning the sync. This means that the app and server can be started in any order.
 
+### Running the tests
+All the code written in this application was written with testing in mind. It is logically grouped into structs that represent a function in the code, using dependency injection
+to allow for easy mocking of dependencies.
+
+To run the unit tests you can use this command:
+```
+go test ./pkg/... -coverprofile=coverage.out
+```
+
+The tests utilise `go.uber.org/mock` to generate mocks from interfaces. These can then force errors in the tests to increase coverage. 
+Due to time constraints, I haven't been able to hit the test coverage I would normally like to, but I would use unit tests in conjunction with integration tests as well
+to ensure that any technologies used with the application work correctly when communicating with it (such as databases or message topics).
+
 ## Assumptions
 
 During the development of the application I have made a few assumptions, these are:
