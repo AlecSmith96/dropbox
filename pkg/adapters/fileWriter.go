@@ -49,7 +49,7 @@ func (writer *FileWriter) CreateFile(path string, data []byte, isDirectory bool)
 }
 
 func (writer *FileWriter) DeleteFile(path string) error {
-	err := os.Remove(path)
+	err := os.RemoveAll(path)
 	if err != nil {
 		slog.Debug("failed to delete file", "err", err)
 		return err
