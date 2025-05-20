@@ -114,33 +114,32 @@ func (monitor *DirectoryMonitor) BuildSnapshot(root string) (map[string]entities
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			// log and skip this entry
 			slog.Error("error accessing path", "path", path, "err", err)
 			return nil
 		}
 
-		// skip directories
+		// WalkDir handles subdirectories for us, so we can skip them here
 		if d.IsDir() {
 			return nil
 		}
 
-		// retrieve FileInfo to get Sys()
+		// retrieve FileInfo to get iNode of file
 		info, err := d.Info()
 		if err != nil {
 			slog.Error("getting file info", "path", path, "err", err)
-			return nil
+			return err
 		}
 
 		data, err := os.ReadFile(path)
 		if err != nil {
 			slog.Error("read file", "path", path, "err", err)
-			return nil
+			return err
 		}
 
 		st, ok := info.Sys().(*syscall.Stat_t)
 		if !ok {
 			slog.Error("unexpected Sys() type", "path", path)
-			return nil
+			return err
 		}
 
 		directoryMap[path] = entities.FileContents{

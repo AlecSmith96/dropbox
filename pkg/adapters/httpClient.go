@@ -22,12 +22,14 @@ func NewHTTPClient(client *http.Client, baseURL string) *HTTPClient {
 	}
 }
 
-func (c *HTTPClient) SendCreateRequest(path string) error {
+func (c *HTTPClient) SendCreateRequest(path string, data []byte) error {
 	type CreateRequestBody struct {
 		Path string `json:"path"`
+		Data []byte `json:"data"`
 	}
 	requestBody := CreateRequestBody{
 		Path: path,
+		Data: data,
 	}
 
 	requestBodyBytes, err := json.Marshal(&requestBody)

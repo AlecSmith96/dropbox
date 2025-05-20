@@ -9,9 +9,10 @@ import (
 
 type CreateFileRequestBody struct {
 	Path string `json:"path" binding:"required"`
+	Data []byte `json:"data"`
 }
 
-func NewCreateNewFile(fileCreator func(string) error, destinationDir string) gin.HandlerFunc {
+func NewCreateNewFile(fileCreator func(string, []byte) error, destinationDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request CreateFileRequestBody
 		err := c.ShouldBindJSON(&request)
@@ -24,7 +25,7 @@ func NewCreateNewFile(fileCreator func(string) error, destinationDir string) gin
 		}
 
 		filePathInDestinationDir := fmt.Sprintf("%s%s", destinationDir, request.Path)
-		err = fileCreator(filePathInDestinationDir)
+		err = fileCreator(filePathInDestinationDir, request.Data)
 		if err != nil {
 			slog.Error("creating new file", "err", err)
 			c.JSON(http.StatusInternalServerError, map[string]interface{}{

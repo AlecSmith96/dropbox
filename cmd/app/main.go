@@ -37,9 +37,18 @@ func main() {
 
 	eventProcessor := adapters.NewEventProcessor(httpClient, conf.SourceDirectory)
 
+	// make sure all files in source directory on startup get created in destination
 	syncEvents := directoryMonitor.SyncDestinationWithSource()
 	for _, event := range syncEvents {
-		slog.Debug("event", event)
+		err := eventProcessor.ProcessEvent(event)
+		if err != nil {
+			slog.Error("processing event", "err", err)
+			continue
+		}
+	}
+
+	if len(syncEvents) > 1 {
+		slog.Info("synced existing files in destination")
 	}
 
 	eventChannel := make(chan entities.FilesystemEvent)
