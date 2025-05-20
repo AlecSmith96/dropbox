@@ -9,11 +9,11 @@ import (
 )
 
 type EventProcessor struct {
-	httpClient *HTTPClient
-	sourcePath string
+	requestSender RequestSender
+	sourcePath    string
 }
 
-func NewEventProcessor(client *HTTPClient, sourcePath string) *EventProcessor {
+func NewEventProcessor(requestSender RequestSender, sourcePath string) *EventProcessor {
 	var path string
 	trimmedSourcePath := strings.Split(sourcePath, "./")
 	if len(trimmedSourcePath) != 2 {
@@ -23,9 +23,19 @@ func NewEventProcessor(client *HTTPClient, sourcePath string) *EventProcessor {
 	}
 
 	return &EventProcessor{
-		httpClient: client,
-		sourcePath: path,
+		requestSender: requestSender,
+		sourcePath:    path,
 	}
+}
+
+// RequestSender is an interface that is used to mock the request client calls for testing.
+//
+//go:generate mockgen --build_flags=--mod=mod -destination=../../mocks/requestSender.go  . "RequestSender"
+type RequestSender interface {
+	SendCreateRequest(path string, data []byte, isDirectory bool) error
+	SendDeleteRequest(path string) error
+	SendRenameRequest(oldPath, newPath string) error
+	SendUpdateRequest(path string, data []byte) error
 }
 
 // ProcessEvent is a function that takes a filesystem event and sends the appropriate request to the http server to
@@ -41,7 +51,7 @@ func (processor *EventProcessor) ProcessEvent(event entities.FilesystemEvent) er
 
 	switch event.Operation {
 	case entities.OperationCreated:
-		err := processor.httpClient.SendCreateRequest(filePathWithoutSource, event.FileContents.Data, event.FileContents.IsDirectory)
+		err := processor.requestSender.SendCreateRequest(filePathWithoutSource, event.FileContents.Data, event.FileContents.IsDirectory)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
 			return err
@@ -53,21 +63,21 @@ func (processor *EventProcessor) ProcessEvent(event entities.FilesystemEvent) er
 			return errors.New("invalid trimmed path produced")
 		}
 		previousFilePathWithoutSource := trimmedPath[1]
-		err := processor.httpClient.SendRenameRequest(previousFilePathWithoutSource, filePathWithoutSource)
+		err := processor.requestSender.SendRenameRequest(previousFilePathWithoutSource, filePathWithoutSource)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
 			return err
 		}
 
 	case entities.OperationDeleted:
-		err := processor.httpClient.SendDeleteRequest(filePathWithoutSource)
+		err := processor.requestSender.SendDeleteRequest(filePathWithoutSource)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
 			return err
 		}
 
 	case entities.OperationModified:
-		err := processor.httpClient.SendUpdateRequest(filePathWithoutSource, event.FileContents.Data)
+		err := processor.requestSender.SendUpdateRequest(filePathWithoutSource, event.FileContents.Data)
 		if err != nil {
 			slog.Error("processing create request", "err", err)
 			return err

@@ -49,12 +49,16 @@ func (monitor *DirectoryMonitor) SyncDestinationWithSource() []entities.Filesyst
 	return syncEvents
 }
 
+// PollForFileChanges is a function that build a snapshot of the current state of the source directory and compares it
+// with the previous snapshot. Any differences between them are then calculated and an entities.FilesystemEvent is put on
+// the event channel.
 func (monitor *DirectoryMonitor) PollForFileChanges(eventChan chan entities.FilesystemEvent) error {
 	currentSnapshot, err := monitor.BuildSnapshot(monitor.rootPath)
 	if err != nil {
 		slog.Error("building snapshot of directory", "err", err)
 	}
 
+	// use inodes to compare files as they dont change, allows for tracking filename changes
 	previousFilepathByInodes := make(map[uint64]string, len(monitor.previousSnapshot))
 	for path, metadata := range monitor.previousSnapshot {
 		previousFilepathByInodes[metadata.Inode] = path
@@ -113,6 +117,8 @@ func (monitor *DirectoryMonitor) PollForFileChanges(eventChan chan entities.File
 	return nil
 }
 
+// BuildSnapshot is a function that uses the built in filepath.WalkDir function to traverse the root directory and build
+// a map of filepaths to entities.FileContents. It stores whether each file is a directory, its contents and its inode.
 func (monitor *DirectoryMonitor) BuildSnapshot(root string) (map[string]entities.FileContents, error) {
 	directoryMap := make(map[string]entities.FileContents)
 

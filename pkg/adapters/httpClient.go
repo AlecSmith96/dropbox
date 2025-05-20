@@ -10,19 +10,28 @@ import (
 	"os"
 )
 
-type HTTPClient struct {
-	client  *http.Client
+type RequestClient struct {
+	client  HttpClient
 	baseURL string
 }
 
-func NewHTTPClient(client *http.Client, baseURL string) *HTTPClient {
-	return &HTTPClient{
+var _ RequestSender = &RequestClient{}
+
+func NewHTTPClient(client HttpClient, baseURL string) *RequestClient {
+	return &RequestClient{
 		client:  client,
 		baseURL: baseURL,
 	}
 }
 
-func (c *HTTPClient) IsServerLive() bool {
+// HttpClient is an interface used for mocking the actual http calls for testing
+//
+//go:generate mockgen --build_flags=--mod=mod -destination=../../mocks/httpClient.go  . "HttpClient"
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+func (c *RequestClient) IsServerLive() bool {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v1/health/live", c.baseURL), nil)
 	if err != nil {
 		slog.Debug("error creating request", "err", err)
@@ -42,7 +51,7 @@ func (c *HTTPClient) IsServerLive() bool {
 	return true
 }
 
-func (c *HTTPClient) SendCreateRequest(path string, data []byte, isDirectory bool) error {
+func (c *RequestClient) SendCreateRequest(path string, data []byte, isDirectory bool) error {
 	type createRequestBody struct {
 		Path        string `json:"path"`
 		Data        []byte `json:"data"`
@@ -80,7 +89,7 @@ func (c *HTTPClient) SendCreateRequest(path string, data []byte, isDirectory boo
 	return nil
 }
 
-func (c *HTTPClient) SendDeleteRequest(path string) error {
+func (c *RequestClient) SendDeleteRequest(path string) error {
 	type deleteRequestBody struct {
 		Path string
 	}
@@ -114,7 +123,7 @@ func (c *HTTPClient) SendDeleteRequest(path string) error {
 	return nil
 }
 
-func (c *HTTPClient) SendRenameRequest(oldPath, newPath string) error {
+func (c *RequestClient) SendRenameRequest(oldPath, newPath string) error {
 	type renameRequestBody struct {
 		Path         string
 		PreviousPath string
@@ -150,7 +159,7 @@ func (c *HTTPClient) SendRenameRequest(oldPath, newPath string) error {
 	return nil
 }
 
-func (c *HTTPClient) SendUpdateRequest(path string, data []byte) error {
+func (c *RequestClient) SendUpdateRequest(path string, data []byte) error {
 	type updateRequestBody struct {
 		Path string
 		Data []byte

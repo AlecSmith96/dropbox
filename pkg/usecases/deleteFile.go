@@ -13,7 +13,7 @@ type DeleteFileRequestBody struct {
 
 func NewDeleteFile(fileDeleter func(string) error, destinationDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var request CreateFileRequestBody
+		var request DeleteFileRequestBody
 		err := c.ShouldBindJSON(&request)
 		if err != nil {
 			slog.Warn("failed to bind json body for request", "err", err)
@@ -22,7 +22,7 @@ func NewDeleteFile(fileDeleter func(string) error, destinationDir string) gin.Ha
 			})
 		}
 
-		filePathInDestinationDir := fmt.Sprintf("%s/%s", destinationDir, request.Path)
+		filePathInDestinationDir := fmt.Sprintf("%s%s", destinationDir, request.Path)
 		err = fileDeleter(filePathInDestinationDir)
 		if err != nil {
 			slog.Error("deleting file", "err", err)
