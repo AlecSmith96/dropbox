@@ -144,10 +144,8 @@ func (monitor *DirectoryMonitor) BuildSnapshot(root string) (map[string]entities
 		}
 
 		directoryMap[path] = entities.FileContents{
-			ModTime: info.ModTime(),
-			Size:    info.Size(),
-			Inode:   st.Ino,
-			Data:    data,
+			Inode: st.Ino,
+			Data:  data,
 		}
 		return nil
 	})

@@ -1,7 +1,5 @@
 package entities
 
-import "time"
-
 const (
 	OperationCreated  = "CREATE"
 	OperationModified = "MODIFIED"
@@ -19,8 +17,6 @@ type FilesystemEvent struct {
 }
 
 type FileContents struct {
-	ModTime time.Time
-	Size    int64
-	Inode   uint64
-	Data    []byte
+	Inode uint64
+	Data  []byte
 }

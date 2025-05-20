@@ -1,2 +1,3 @@
-source-directory: ./tmp/different/src
+source-directory: ./tmp/src
 destination-directory: ./tmp/dest
+base-url: http://localhost:8080

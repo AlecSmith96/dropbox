@@ -5,6 +5,7 @@ import (
 	"github.com/AlecSmith96/dopbox/pkg/adapters"
 	"github.com/AlecSmith96/dopbox/pkg/entities"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 )
@@ -26,11 +27,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	httpClient := adapters.NewHTTPClient(http.DefaultClient, conf.BaseURL)
+
 	directoryMonitor, err := adapters.NewDirectoryMonitor(conf.SourceDirectory)
 	if err != nil {
 		slog.Error("creating directory monitor", "err", err)
 		os.Exit(1)
 	}
+
+	eventProcessor := adapters.NewEventProcessor(httpClient, conf.SourceDirectory)
 
 	syncEvents := directoryMonitor.SyncDestinationWithSource()
 	for _, event := range syncEvents {
@@ -68,23 +73,12 @@ func main() {
 				return
 			}
 
-			switch event.Operation {
-			case entities.OperationCreated:
-				slog.Info("CREATE request", "event", event)
-				// CREATE request
-			case entities.OperationRenamed:
-				slog.Info("RENAMED request", "event", event)
-				// UPDATE request
-			case entities.OperationDeleted:
-				slog.Info("DELETED request", "event", event)
-				// DELETE request
-			case entities.OperationModified:
-				slog.Info("MODIFIED request", "event", event)
-				// UPDATE request
-
-			default:
-				slog.Error("unknown event operation", "operation", event.Operation)
+			err := eventProcessor.ProcessEvent(event)
+			if err != nil {
+				slog.Error("processing event", "err", err)
+				continue
 			}
+
 			slog.Info("processed event", "event", event)
 		case <-ctx.Done():
 			slog.Debug("shutting down listener")

@@ -8,6 +8,7 @@ import (
 type Config struct {
 	SourceDirectory      string `yaml:"source-directory"`
 	DestinationDirectory string `yaml:"destination-directory"`
+	BaseURL              string `yaml:"base-url"`
 }
 
 func NewConfig() (*Config, error) {
