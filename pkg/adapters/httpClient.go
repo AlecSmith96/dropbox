@@ -22,6 +22,26 @@ func NewHTTPClient(client *http.Client, baseURL string) *HTTPClient {
 	}
 }
 
+func (c *HTTPClient) IsServerLive() bool {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v1/health/live", c.baseURL), nil)
+	if err != nil {
+		slog.Debug("error creating request", "err", err)
+		return false
+	}
+
+	response, err := c.client.Do(req)
+	if err != nil {
+		slog.Debug("error sending create request", "err", err)
+		return false
+	}
+
+	if response.StatusCode != 200 {
+		return false
+	}
+
+	return true
+}
+
 func (c *HTTPClient) SendCreateRequest(path string, data []byte, isDirectory bool) error {
 	type CreateRequestBody struct {
 		Path        string `json:"path"`
@@ -41,8 +61,8 @@ func (c *HTTPClient) SendCreateRequest(path string, data []byte, isDirectory boo
 	}
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/v1/file", c.baseURL), bytes.NewReader(requestBodyBytes))
 	if err != nil {
-		fmt.Printf("c: could not create request: %s\n", err)
-		os.Exit(1)
+		slog.Debug("error creating request", "err", err)
+		return err
 	}
 
 	response, err := c.client.Do(req)

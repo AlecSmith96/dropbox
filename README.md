@@ -25,6 +25,8 @@ an error similar to:
 2025/05/19 21:51:24 ERROR source directory does not exist err="stat ./tmp/different/src: no such file or directory"
 ```
 
+As the`app` synchronises initial source state on startup, the `server` needs to be ready when it starts up. However, when the app starts up it will poll a liveness endpoint on the server until it is ready to serve traffic before beginning the sync. This means that the app and server can be started in any order.
+
 ## Assumptions
 
 During the development of the application I have made a few assumptions, these are:

@@ -28,6 +28,12 @@ func main() {
 	}
 
 	httpClient := adapters.NewHTTPClient(http.DefaultClient, conf.BaseURL)
+	serverLive := false
+	slog.Info("checking sever liveness")
+	for !serverLive {
+		serverLive = httpClient.IsServerLive()
+	}
+	slog.Info("server live!")
 
 	directoryMonitor, err := adapters.NewDirectoryMonitor(conf.SourceDirectory)
 	if err != nil {
