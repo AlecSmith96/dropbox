@@ -11,10 +11,23 @@ type FileWriter struct {
 	destinationPath string
 }
 
+var _ FileModifier = &FileWriter{}
+
 func NewFileWriter(destinationPath string) *FileWriter {
 	return &FileWriter{
 		destinationPath: destinationPath,
 	}
+}
+
+// FileModifier is an interface that sets out the functions implemented by the FileWriter. This allows for mocking of
+// the FileWriter functionality in tests.
+//
+//go:generate mockgen --build_flags=--mod=mod -destination=../../mocks/fileModifier.go  . "FileModifier"
+type FileModifier interface {
+	CreateFile(path string, data []byte, isDirectory bool) error
+	DeleteFile(path string) error
+	RenameFile(oldPath, newPath string) error
+	UpdateFile(path string, data []byte) error
 }
 
 // CreateFile is a function for creating a file at the given path, with the contents if provided. For any files that exist in sub directories it will
