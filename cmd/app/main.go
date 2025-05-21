@@ -24,6 +24,7 @@ func main() {
 		sourceDirectory = filepath.Join(home, conf.SourceDirectory[1:])
 	}
 
+	// validate the source directory exists
 	_, err = os.Stat(sourceDirectory)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -34,6 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// init dependencies
 	httpClient := adapters.NewHTTPClient(http.DefaultClient, conf.BaseURL)
 	serverLive := false
 	slog.Info("checking sever liveness")

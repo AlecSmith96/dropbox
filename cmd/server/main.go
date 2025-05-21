@@ -21,6 +21,7 @@ func main() {
 		destinationDirectory = filepath.Join(home, conf.DestinationDirectory[1:])
 	}
 
+	// validate the destination directory exists
 	_, err = os.Stat(destinationDirectory)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -31,6 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// init dependencies
 	fileWriter := adapters.NewFileWriter(destinationDirectory)
 	router := drivers.NewRouter(destinationDirectory, fileWriter)
 
